@@ -1,10 +1,12 @@
 using BTD_Mod_Helper;
 using BTD_Mod_Helper.Api.ModOptions;
+using BTD_Mod_Helper.Extensions;
 using CEditorBoss;
+using Il2CppAssets.Scripts.Models.Bloons.Behaviors.Actions;
 using Il2CppAssets.Scripts.Unity;
+using Il2CppAssets.Scripts.Unity.UI_New.InGame;
 using MelonLoader;
-using MelonLoader.Utils;
-using UnityEngine;
+
 
 [assembly: MelonInfo(typeof(CEditorBoss.Main), ModHelperData.Name, ModHelperData.Version, ModHelperData.RepoOwner)]
 [assembly: MelonGame("Ninja Kiwi", "BloonsTD6")]
@@ -16,7 +18,7 @@ public enum BossType
     Bloonarius,
     Vortex,
     Dreadbloon,
-    Lych, 
+    Lych,
     Phayze,
     Blastapopoulus,
     Diamondback
@@ -91,6 +93,28 @@ public class Main : BloonsTD6Mod
         challengeEditorModel.startRules.endRound = 140;
 
         settingsDirty = false;
-     
+
+    }
+    
+
+    public override void OnMatchStart()
+    {
+        var multiplier = (float)(BossHealthMultiplier / 100.0);
+
+        var boss = BossName.GetValue();
+
+        var model = InGame.Bridge.Model;
+        if (model == null) return;
+
+        foreach (var bloon in model.bloons)
+        {
+            if (bloon == null || !bloon.isBoss) continue;
+
+            foreach (var armour in bloon.GetBehaviors<GenerateArmourActionModel>()) // dreadbloon
+                armour.amount *= multiplier;
+
+            foreach (var shield in bloon.GetBehaviors<GenerateShieldActionModel>()) // phayze
+                shield.amount *= multiplier;
+        }
     }
 }
